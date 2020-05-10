@@ -1,17 +1,23 @@
 use ray_tracer::{Color, Vec3, Ray, Point3};
 
-fn hit_sphere(center: Point3, radius: f64, ray: &Ray) -> bool {
+fn hit_sphere(center: Point3, radius: f64, ray: &Ray) -> f64 {
     let oc = *ray.origin() - center;
     let a = ray.direction().dot(ray.direction());
-    let b = 2.0 * ray.direction().dot(&oc);
+    let half_b = ray.direction().dot(&oc);
     let c = oc.dot(&oc) - radius * radius;
-    let discriminant = b * b - 4.0 * a * c;
-    discriminant > 0.0
+    let discriminant = half_b * half_b - a * c;
+    if discriminant < 0.0 {
+        -1.0
+    } else {
+        (-half_b - discriminant.sqrt()) / a
+    }
 }
 
 fn ray_color(r: &Ray) -> Color {
-    if hit_sphere(Point3::new(0., 0., -1.), 0.5, r) {
-        Color::new(1., 0., 0.)
+    let t = hit_sphere(Point3::new(0., 0., -1.), 0.5, r);
+    if t > 0.0 {
+        let n = (r.at(t) - Vec3::new(0., 0., -1.)).unit_vector();
+        0.5 * Color::new(n.x() + 1., n.y() + 1., n.z() + 1.)
     } else {
         let unit_direction = r.direction().unit_vector();
         let t = 0.5 * (unit_direction.y() + 1.0);
