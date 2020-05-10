@@ -15,37 +15,37 @@ impl Vec3 {
     }
 
     pub fn x(&self) -> f64 {
-        return self.e[0];
+        self.e[0]
     }
 
     pub fn y(&self) -> f64 {
-        return self.e[1];
+        self.e[1]
     }
 
     pub fn z(&self) -> f64 {
-        return self.e[2];
+        self.e[2]
     }
 
     pub fn length_squared(&self) -> f64 {
-        return self.e[0] * self.e[0] + self.e[1] * self.e[1] + self.e[2] * self.e[2];
+        self.e[0] * self.e[0] + self.e[1] * self.e[1] + self.e[2] * self.e[2]
     }
 
     pub fn length(&self) -> f64 {
-        return self.length_squared().sqrt();
+        self.length_squared().sqrt()
     }
 
     pub fn dot(&self, rhs: &Self) -> f64 {
-        return self.e[0] * rhs.e[0] + self.e[1] * rhs.e[1] + self.e[2] * rhs.e[2];
+        self.e[0] * rhs.e[0] + self.e[1] * rhs.e[1] + self.e[2] * rhs.e[2]
     }
 
     pub fn cross(&self, rhs: &Self) -> Vec3 {
-        return Vec3 {
+        Vec3 {
             e: [
                 self.e[1] * rhs.e[2] - self.e[2] * rhs.e[1],
                 self.e[2] * rhs.e[0] - self.e[0] * rhs.e[2],
                 self.e[0] * rhs.e[1] - self.e[1] * rhs.e[0],
             ]
-        };
+        }
     }
 
     pub fn unit_vector(self) -> Vec3 {
