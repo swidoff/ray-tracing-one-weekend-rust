@@ -99,7 +99,7 @@ impl_op_ex!(- |a: &Vec3, b: &Vec3| -> Vec3 {
     Vec3 { e: [a.e[0] - b.e[0], a.e[1] - b.e[1], a.e[2] - b.e[2]] }
 });
 
-impl_op!(*= |a: &mut Vec3, b: f64| {
+impl_op_ex!(*= |a: &mut Vec3, b: f64| {
     a.e[0] *= b;
     a.e[1] *= b;
     a.e[2] *= b;
@@ -113,7 +113,7 @@ impl_op_ex_commutative!(* |a: &Vec3, b: f64| -> Vec3 {
     Vec3 { e: [a.e[0] * b, a.e[1] * b, a.e[2] * b] }
 });
 
-impl_op!(/= |a: &mut Vec3, b: f64| {
+impl_op_ex!(/= |a: &mut Vec3, b: f64| {
     *a *= 1.0 / b
 });
 
