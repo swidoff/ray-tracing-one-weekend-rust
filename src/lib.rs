@@ -1,4 +1,5 @@
 #![feature(clamp)]
+#[macro_use] extern crate impl_ops;
 
 mod vec3;
 mod ray;

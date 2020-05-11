@@ -1,5 +1,6 @@
-use std::ops::{Neg, AddAssign, MulAssign, DivAssign, Index, IndexMut, Add, Sub, Mul, Div};
 use std::fmt;
+use std::ops::{Index, IndexMut};
+use std::ops;
 
 pub type Point3 = Vec3;
 pub type Color = Vec3;
@@ -66,24 +67,6 @@ impl Vec3 {
     }
 }
 
-impl<'a> Neg for &'a Vec3 {
-    type Output = Vec3;
-
-    fn neg(self) -> Self::Output {
-        let e = [-self.e[0], -self.e[1], -self.e[2]];
-        Vec3 { e }
-    }
-}
-
-impl Neg for Vec3 {
-    type Output = Vec3;
-
-    fn neg(self) -> Self::Output {
-        -&self
-    }
-}
-
-
 impl Index<usize> for Vec3 {
     type Output = f64;
 
@@ -98,131 +81,45 @@ impl IndexMut<usize> for Vec3 {
     }
 }
 
-impl AddAssign for Vec3 {
-    fn add_assign(&mut self, rhs: Self) {
-        self.e[0] += rhs.e[0];
-        self.e[1] += rhs.e[1];
-        self.e[2] += rhs.e[2];
-    }
-}
+impl_op_ex!(- |a: Vec3| -> Vec3 {
+    Vec3 { e: [-a.e[0], -a.e[1], -a.e[2]] }
+});
 
-impl Add for Vec3 {
-    type Output = Vec3;
+impl_op_ex!(+= |a: &mut Vec3, b: Vec3| {
+    a.e[0] += b.e[0];
+    a.e[1] += b.e[1];
+    a.e[2] += b.e[2];
+});
 
-    fn add(self, rhs: Self) -> Self::Output {
-        &self + &rhs
-    }
-}
+impl_op_ex!(+ |a: &Vec3, b: &Vec3| -> Vec3 {
+    Vec3 { e: [a.e[0] + b.e[0], a.e[1] + b.e[1], a.e[2] + b.e[2]] }
+});
 
-impl<'a, 'b> Add<&'b Vec3> for &'a Vec3 {
-    type Output = Vec3;
+impl_op_ex!(- |a: &Vec3, b: &Vec3| -> Vec3 {
+    Vec3 { e: [a.e[0] - b.e[0], a.e[1] - b.e[1], a.e[2] - b.e[2]] }
+});
 
-    fn add(self, rhs: &'b Vec3) -> Self::Output {
-        let e = [self.e[0] + rhs.e[0], self.e[1] + rhs.e[1], self.e[2] + rhs.e[2]];
-        Vec3 { e }
-    }
-}
+impl_op!(*= |a: &mut Vec3, b: f64| {
+    a.e[0] *= b;
+    a.e[1] *= b;
+    a.e[2] *= b;
+});
 
-impl Sub for Vec3 {
-    type Output = Vec3;
+impl_op_ex!(* |a: &Vec3, b: &Vec3| -> Vec3 {
+    Vec3 { e: [a.e[0] * b.e[0], a.e[1] * b.e[1], a.e[2] * b.e[2]] }
+});
 
-    fn sub(self, rhs: Vec3) -> Self::Output {
-        &self - &rhs
-    }
-}
+impl_op_ex_commutative!(* |a: &Vec3, b: f64| -> Vec3 {
+    Vec3 { e: [a.e[0] * b, a.e[1] * b, a.e[2] * b] }
+});
 
+impl_op!(/= |a: &mut Vec3, b: f64| {
+    *a *= 1.0 / b
+});
 
-impl<'a, 'b> Sub<&'b Vec3> for &'a Vec3 {
-    type Output = Vec3;
-
-    fn sub(self, rhs: &'b Vec3) -> Self::Output {
-        let e = [self.e[0] - rhs.e[0], self.e[1] - rhs.e[1], self.e[2] - rhs.e[2]];
-        Vec3 { e }
-    }
-}
-
-impl MulAssign<f64> for Vec3 {
-    fn mul_assign(&mut self, rhs: f64) {
-        self.e[0] *= rhs;
-        self.e[1] *= rhs;
-        self.e[2] *= rhs;
-    }
-}
-
-
-impl Mul for Vec3 {
-    type Output = Vec3;
-
-    fn mul(self, rhs: Self) -> Self::Output {
-        &self * &rhs
-    }
-}
-
-impl<'a, 'b> Mul<&'b Vec3> for &'a Vec3 {
-    type Output = Vec3;
-
-    fn mul(self, rhs: &'b Vec3) -> Self::Output {
-        let e = [self.e[0] * rhs.e[0], self.e[1] * rhs.e[1], self.e[2] * rhs.e[2]];
-        Vec3 { e }
-    }
-}
-
-
-impl Mul<&Vec3> for f64 {
-    type Output = Vec3;
-
-    fn mul(self, rhs: &Vec3) -> Self::Output {
-        rhs * self
-    }
-}
-
-impl Mul<Vec3> for f64 {
-    type Output = Vec3;
-
-    fn mul(self, rhs: Vec3) -> Self::Output {
-        self * &rhs
-    }
-}
-
-impl Mul<f64> for &Vec3 {
-    type Output = Vec3;
-
-    fn mul(self, rhs: f64) -> Self::Output {
-        let e = [rhs * self.e[0], rhs * self.e[1], rhs * self.e[2]];
-        Vec3 { e }
-    }
-}
-
-impl Mul<f64> for Vec3 {
-    type Output = Vec3;
-
-    fn mul(self, rhs: f64) -> Self::Output {
-        &self * rhs
-    }
-}
-
-
-impl DivAssign<f64> for Vec3 {
-    fn div_assign(&mut self, rhs: f64) {
-        *self *= 1.0 / rhs;
-    }
-}
-
-impl Div<f64> for &Vec3 {
-    type Output = Vec3;
-
-    fn div(self, rhs: f64) -> Self::Output {
-        self * (1.0 / rhs)
-    }
-}
-
-impl Div<f64> for Vec3 {
-    type Output = Vec3;
-
-    fn div(self, rhs: f64) -> Self::Output {
-        &self / rhs
-    }
-}
+impl_op_ex!(/ |a: &Vec3, b: &f64| -> Vec3 {
+    a * (1.0 / b)
+});
 
 impl fmt::Display for Vec3 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
