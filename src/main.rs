@@ -1,27 +1,18 @@
-use ray_tracer::{Color, Vec3, Ray, Point3};
+use ray_tracer::{Color, Vec3, Ray, Point3, Hittable, Sphere, HittableList};
+use std::f64;
+use std::rc::Rc;
 
-fn hit_sphere(center: Point3, radius: f64, ray: &Ray) -> f64 {
-    let oc = *ray.origin() - center;
-    let a = ray.direction().dot(ray.direction());
-    let half_b = ray.direction().dot(&oc);
-    let c = oc.dot(&oc) - radius * radius;
-    let discriminant = half_b * half_b - a * c;
-    if discriminant < 0.0 {
-        -1.0
-    } else {
-        (-half_b - discriminant.sqrt()) / a
-    }
-}
-
-fn ray_color(r: &Ray) -> Color {
-    let t = hit_sphere(Point3::new(0., 0., -1.), 0.5, r);
-    if t > 0.0 {
-        let n = (r.at(t) - Vec3::new(0., 0., -1.)).unit_vector();
-        0.5 * Color::new(n.x() + 1., n.y() + 1., n.z() + 1.)
-    } else {
-        let unit_direction = r.direction().unit_vector();
-        let t = 0.5 * (unit_direction.y() + 1.0);
-        (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
+fn ray_color(r: &Ray, world: &dyn Hittable) -> Color {
+    match world.hit(r, 0., f64::INFINITY) {
+        Some(rec) =>
+        // Normal vector coloring.
+            0.5 * (rec.normal + Color::new(1., 1., 1.)),
+        None => {
+            // Blue/white gradient
+            let unit_direction = r.direction().unit_vector();
+            let t = 0.5 * (unit_direction.y() + 1.0);
+            (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
+        }
     }
 }
 
@@ -32,10 +23,15 @@ fn main() {
 
     println!("P3 {} {}", image_width, image_height);
     println!("255");
-    let origin = Point3::new(0., 0., 0.);
+
+    let lower_left_corner = Point3::new(-2., -1., -1.);
     let horizontal = Vec3::new(4., 0., 0.);
-    let vertical = Vec3::new(0., 2.25, 0.);
-    let lower_left_corner = origin - horizontal / 2.0 - vertical / 2.0 - Vec3::new(0., 0., 1.0);
+    let vertical = Vec3::new(0., 2.0, 0.);
+    let origin = Point3::new(0., 0., 0.);
+
+    let mut world = HittableList::new();
+    world.add(Rc::new(Sphere::new(Point3::new(0., 0., -1.), 0.5)));
+    world.add(Rc::new(Sphere::new(Point3::new(0., -100.5, -1.), 100.)));
 
     for j in (0..image_height).rev() {
         eprint!("\rScanlines remaining: {} ", j);
@@ -43,7 +39,7 @@ fn main() {
             let u = i as f64 / (image_width - 1) as f64;
             let v = j as f64 / (image_height - 1) as f64;
             let r = Ray::new(origin, lower_left_corner + u * horizontal + v * vertical);
-            let pixel_color = ray_color(&r);
+            let pixel_color = ray_color(&r, &world);
             println!("{}", Vec3::format_color(pixel_color));
         }
     }
