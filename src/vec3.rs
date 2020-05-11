@@ -53,10 +53,15 @@ impl Vec3 {
         self / len
     }
 
-    pub fn format_color(color: Color) -> String {
-        let ir = (color.x() * 255.999) as u8;
-        let ig = (color.y() * 255.999) as u8;
-        let ib = (color.z() * 255.999) as u8;
+    pub fn format_color(color: Color, samples: u16) -> String {
+        let scale = 1. / samples as f64;
+        let r = color.x() * scale;
+        let g = color.y() * scale;
+        let b = color.z() * scale;
+
+        let ir = (256. * r.clamp(0., 0.999)) as u8;
+        let ig = (256. * g.clamp(0., 0.999)) as u8;
+        let ib = (256. * b.clamp(0., 0.999)) as u8;
         format!("{} {} {}", ir, ig, ib)
     }
 }
