@@ -4,7 +4,7 @@ use std::fmt;
 pub type Point3 = Vec3;
 pub type Color = Vec3;
 
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Vec3 {
     e: [f64; 3]
 }
@@ -48,7 +48,7 @@ impl Vec3 {
         }
     }
 
-    pub fn unit_vector(self) -> Vec3 {
+    pub fn unit_vector(&self) -> Vec3 {
         let len = self.length();
         self / len
     }
@@ -66,7 +66,7 @@ impl Vec3 {
     }
 }
 
-impl Neg for Vec3 {
+impl<'a> Neg for &'a Vec3 {
     type Output = Vec3;
 
     fn neg(self) -> Self::Output {
@@ -74,6 +74,15 @@ impl Neg for Vec3 {
         Vec3 { e }
     }
 }
+
+impl Neg for Vec3 {
+    type Output = Vec3;
+
+    fn neg(self) -> Self::Output {
+        -&self
+    }
+}
+
 
 impl Index<usize> for Vec3 {
     type Output = f64;
@@ -101,6 +110,14 @@ impl Add for Vec3 {
     type Output = Vec3;
 
     fn add(self, rhs: Self) -> Self::Output {
+        &self + &rhs
+    }
+}
+
+impl<'a, 'b> Add<&'b Vec3> for &'a Vec3 {
+    type Output = Vec3;
+
+    fn add(self, rhs: &'b Vec3) -> Self::Output {
         let e = [self.e[0] + rhs.e[0], self.e[1] + rhs.e[1], self.e[2] + rhs.e[2]];
         Vec3 { e }
     }
@@ -109,7 +126,16 @@ impl Add for Vec3 {
 impl Sub for Vec3 {
     type Output = Vec3;
 
-    fn sub(self, rhs: Self) -> Self::Output {
+    fn sub(self, rhs: Vec3) -> Self::Output {
+        &self - &rhs
+    }
+}
+
+
+impl<'a, 'b> Sub<&'b Vec3> for &'a Vec3 {
+    type Output = Vec3;
+
+    fn sub(self, rhs: &'b Vec3) -> Self::Output {
         let e = [self.e[0] - rhs.e[0], self.e[1] - rhs.e[1], self.e[2] - rhs.e[2]];
         Vec3 { e }
     }
@@ -128,8 +154,25 @@ impl Mul for Vec3 {
     type Output = Vec3;
 
     fn mul(self, rhs: Self) -> Self::Output {
+        &self * &rhs
+    }
+}
+
+impl<'a, 'b> Mul<&'b Vec3> for &'a Vec3 {
+    type Output = Vec3;
+
+    fn mul(self, rhs: &'b Vec3) -> Self::Output {
         let e = [self.e[0] * rhs.e[0], self.e[1] * rhs.e[1], self.e[2] * rhs.e[2]];
         Vec3 { e }
+    }
+}
+
+
+impl Mul<&Vec3> for f64 {
+    type Output = Vec3;
+
+    fn mul(self, rhs: &Vec3) -> Self::Output {
+        rhs * self
     }
 }
 
@@ -137,17 +180,24 @@ impl Mul<Vec3> for f64 {
     type Output = Vec3;
 
     fn mul(self, rhs: Vec3) -> Self::Output {
-        rhs * self
+        self * &rhs
     }
 }
 
-
-impl Mul<f64> for Vec3 {
+impl Mul<f64> for &Vec3 {
     type Output = Vec3;
 
     fn mul(self, rhs: f64) -> Self::Output {
         let e = [rhs * self.e[0], rhs * self.e[1], rhs * self.e[2]];
         Vec3 { e }
+    }
+}
+
+impl Mul<f64> for Vec3 {
+    type Output = Vec3;
+
+    fn mul(self, rhs: f64) -> Self::Output {
+        &self * rhs
     }
 }
 
@@ -158,11 +208,19 @@ impl DivAssign<f64> for Vec3 {
     }
 }
 
-impl Div<f64> for Vec3 {
+impl Div<f64> for &Vec3 {
     type Output = Vec3;
 
     fn div(self, rhs: f64) -> Self::Output {
         self * (1.0 / rhs)
+    }
+}
+
+impl Div<f64> for Vec3 {
+    type Output = Vec3;
+
+    fn div(self, rhs: f64) -> Self::Output {
+        &self / rhs
     }
 }
 

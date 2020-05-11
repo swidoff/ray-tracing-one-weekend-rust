@@ -10,9 +10,9 @@ pub struct HitRecord {
 }
 
 impl HitRecord {
-    fn from_outward_normal<F: FnOnce(Point3) -> Vec3>(r: &Ray, t: f64, outward_normal_fn: F) -> HitRecord {
+    fn from_outward_normal<F: FnOnce(&Point3) -> Vec3>(r: &Ray, t: f64, outward_normal_fn: F) -> HitRecord {
         let p = r.at(t);
-        let outward_normal = outward_normal_fn(p);
+        let outward_normal = outward_normal_fn(&p);
         let front_face = r.direction().dot(&outward_normal) < 0.0;
         let normal = if front_face { outward_normal } else { -outward_normal };
         HitRecord { p, normal, t, front_face }
@@ -33,14 +33,14 @@ impl Sphere {
         Sphere { center, radius }
     }
 
-    pub fn outward_normal(&self, p: Point3) -> Vec3 {
-        (p - self.center) / self.radius
+    pub fn outward_normal(&self, p: &Point3) -> Vec3 {
+        (p - &self.center) / self.radius
     }
 }
 
 impl Hittable for Sphere {
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
-        let oc = *ray.origin() - self.center;
+        let oc = ray.origin() - &self.center;
         let a = ray.direction().dot(ray.direction());
         let half_b = ray.direction().dot(&oc);
         let c = oc.dot(&oc) - self.radius * self.radius;
