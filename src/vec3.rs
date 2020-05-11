@@ -1,6 +1,6 @@
 use std::fmt;
 use std::ops::{Index, IndexMut};
-use std::ops;
+use auto_ops::*;
 
 pub type Point3 = Vec3;
 pub type Color = Vec3;
