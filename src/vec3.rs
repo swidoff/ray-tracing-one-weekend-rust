@@ -1,6 +1,9 @@
 use std::fmt;
+use std::iter;
 use std::ops::{Index, IndexMut};
 use auto_ops::*;
+use crate::util::{random, random_range};
+use std::f64::consts::PI;
 
 pub type Point3 = Vec3;
 pub type Color = Vec3;
@@ -13,6 +16,36 @@ pub struct Vec3 {
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Vec3 {
         Color { e: [x, y, z] }
+    }
+
+    pub fn random() -> Vec3 {
+        Vec3::new(random(), random(), random())
+    }
+
+    pub fn random_range(min: f64, max: f64) -> Vec3 {
+        Vec3::new(random_range(min, max), random_range(min, max), random_range(min, max))
+    }
+
+    pub fn random_in_unit_sphere() -> Vec3 {
+        iter::repeat_with(|| Vec3::random())
+            .find(|v| v.length_squared() > 1.)
+            .unwrap()
+    }
+
+    pub fn random_unit_vector() -> Vec3 {
+        let a = random_range(0., 2.*PI);
+        let z = random_range(-1., 1.);
+        let r = (1. - z*z).sqrt();
+        Vec3::new(r*a.cos(), r*a.sin(), z)
+    }
+
+    pub fn random_in_hemisphere(normal: &Vec3) ->Vec3 {
+        let in_unit_sphere = Vec3::random_in_unit_sphere();
+        if in_unit_sphere.dot(normal) > 0.0 {
+            in_unit_sphere
+        } else {
+            -in_unit_sphere
+        }
     }
 
     pub fn x(&self) -> f64 {
@@ -56,9 +89,9 @@ impl Vec3 {
 
     pub fn format_color(color: Color, samples: u16) -> String {
         let scale = 1. / samples as f64;
-        let r = color.x() * scale;
-        let g = color.y() * scale;
-        let b = color.z() * scale;
+        let r = (color.x() * scale).sqrt();
+        let g = (color.y() * scale).sqrt();
+        let b = (color.z() * scale).sqrt();
 
         let ir = (256. * r.clamp(0., 0.999)) as u8;
         let ig = (256. * g.clamp(0., 0.999)) as u8;
