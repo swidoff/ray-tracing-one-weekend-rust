@@ -1,21 +1,24 @@
 use crate::vec3::{Vec3, Point3};
 use crate::ray::Ray;
 use std::rc::Rc;
+use crate::material::Material;
 
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
     pub t: f64,
     pub front_face: bool,
+    pub material: Rc<dyn Material>,
 }
 
 impl HitRecord {
-    fn from_outward_normal<F: FnOnce(&Point3) -> Vec3>(r: &Ray, t: f64, outward_normal_fn: F) -> HitRecord {
+    fn from_outward_normal<F>(r: &Ray, t: f64, material: &Rc<dyn Material>, outward_normal_fn: F) -> HitRecord
+        where F: FnOnce(&Point3) -> Vec3 {
         let p = r.at(t);
         let outward_normal = outward_normal_fn(&p);
         let front_face = r.direction().dot(&outward_normal) < 0.0;
         let normal = if front_face { outward_normal } else { -outward_normal };
-        HitRecord { p, normal, t, front_face }
+        HitRecord { p, normal, t, front_face, material: Rc::clone(material) }
     }
 }
 
@@ -26,11 +29,12 @@ pub trait Hittable {
 pub struct Sphere {
     pub center: Point3,
     pub radius: f64,
+    pub material: Rc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f64) -> Sphere {
-        Sphere { center, radius }
+    pub fn new(center: Point3, radius: f64, material: Rc<dyn Material>) -> Sphere {
+        Sphere { center, radius, material: Rc::clone(&material) }
     }
 
     pub fn outward_normal(&self, p: &Point3) -> Vec3 {
@@ -53,7 +57,7 @@ impl Hittable for Sphere {
             (0..2).map(|i| solutions[i])
                 .find(|t| *t < t_max && *t > t_min)
                 .map(|t| {
-                    HitRecord::from_outward_normal(&ray, t, |p| self.outward_normal(p))
+                    HitRecord::from_outward_normal(&ray, t, &self.material, |p| self.outward_normal(p))
                 })
         }
     }
@@ -88,7 +92,7 @@ impl Hittable for HittableList {
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         self.objects.iter()
             .fold(None, |prev, object| {
-                let t_closest = prev.iter().find_map(|r|Some(r.t)).unwrap_or(t_max);
+                let t_closest = prev.iter().find_map(|r| Some(r.t)).unwrap_or(t_max);
                 let rec = object.hit(ray, t_min, t_closest);
                 rec.or(prev)
             })

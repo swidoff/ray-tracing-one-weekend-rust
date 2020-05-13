@@ -1,4 +1,4 @@
-use ray_tracer::{Color, Vec3, Ray, Point3, Hittable, Sphere, HittableList, Camera, random};
+use ray_tracer::{Color, Vec3, Ray, Point3, Hittable, Sphere, HittableList, Camera, random, Scatter, Metal, Lambertian};
 use std::f64;
 use std::rc::Rc;
 
@@ -8,11 +8,11 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: i16) -> Color {
     } else {
         match world.hit(r, 0.001, f64::INFINITY) {
             Some(rec) => {
-                // Normal vector coloring.
-                // let target = &rec.p + Vec3::random_in_hemisphere(&rec.normal);
-                let target = &rec.p + rec.normal + Vec3::random_unit_vector();
-                let direction = target - &rec.p;
-                0.5 * ray_color(&Ray::new(rec.p, direction), world, depth - 1)
+                match rec.material.scatter(r, &rec) {
+                    Some(Scatter { scattered, attenuation }) =>
+                        attenuation * ray_color(&scattered, world, depth - 1),
+                    None => Color::new(0., 0., 0.)
+                }
             }
             None => {
                 // Blue/white gradient
@@ -36,8 +36,30 @@ fn main() {
 
     let camera = Camera::new();
     let mut world = HittableList::new();
-    world.add(Rc::new(Sphere::new(Point3::new(0., 0., -1.), 0.5)));
-    world.add(Rc::new(Sphere::new(Point3::new(0., -100.5, -1.), 100.)));
+    world.add(Rc::new(
+        Sphere {
+            center: Point3::new(0., 0., -1.),
+            radius: 0.5,
+            material: Rc::new(Lambertian { albedo: Color::new(0.7, 0.3, 0.3) }),
+        }));
+    world.add(Rc::new(
+        Sphere {
+            center: Point3::new(0., -100.5, -1.),
+            radius: 100.,
+            material: Rc::new(Lambertian { albedo: Color::new(0.8, 0.8, 0.) }),
+        }));
+    world.add(Rc::new(
+        Sphere {
+            center: Point3::new(1., 0., -1.),
+            radius: 0.5,
+            material: Rc::new(Metal { albedo: Color::new(0.8, 0.6, 0.2), fuzz: 1. }),
+        }));
+    world.add(Rc::new(
+        Sphere {
+            center: Point3::new(-1., 0., -1.),
+            radius: 0.5,
+            material: Rc::new(Metal { albedo: Color::new(0.8, 0.8, 0.8), fuzz: 0. }),
+        }));
 
     for j in (0..image_height).rev() {
         eprint!("\rScanlines remaining: {} ", j);
