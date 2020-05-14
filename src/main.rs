@@ -1,4 +1,4 @@
-use ray_tracer::{Color, Vec3, Ray, Point3, Hittable, Sphere, HittableList, Camera, random, Scatter, Metal, Lambertian};
+use ray_tracer::{Color, Vec3, Ray, Point3, Hittable, Sphere, HittableList, Camera, random, Scatter, Metal, Lambertian, Dielectric};
 use std::f64;
 use std::rc::Rc;
 
@@ -50,15 +50,21 @@ fn main() {
         }));
     world.add(Rc::new(
         Sphere {
-            center: Point3::new(1., 0., -1.),
+            center: Point3::new(-1., 0., -1.),
             radius: 0.5,
-            material: Rc::new(Metal { albedo: Color::new(0.8, 0.6, 0.2), fuzz: 1. }),
+            material: Rc::new(Dielectric { ref_idx: 1.5 }),
         }));
     world.add(Rc::new(
         Sphere {
             center: Point3::new(-1., 0., -1.),
+            radius: -0.45,
+            material: Rc::new(Dielectric { ref_idx: 1.5 }),
+        }));
+    world.add(Rc::new(
+        Sphere {
+            center: Point3::new(1., 0., -1.),
             radius: 0.5,
-            material: Rc::new(Metal { albedo: Color::new(0.8, 0.8, 0.8), fuzz: 0. }),
+            material: Rc::new(Metal { albedo: Color::new(0.8, 0.6, 0.2), fuzz: 0. }),
         }));
 
     for j in (0..image_height).rev() {

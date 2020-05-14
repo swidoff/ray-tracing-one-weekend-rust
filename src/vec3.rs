@@ -114,7 +114,7 @@ impl IndexMut<usize> for Vec3 {
     }
 }
 
-impl_op_ex!(- |a: Vec3| -> Vec3 {
+impl_op_ex!(- |a: &Vec3| -> Vec3 {
     Vec3 { e: [-a.e[0], -a.e[1], -a.e[2]] }
 });
 
