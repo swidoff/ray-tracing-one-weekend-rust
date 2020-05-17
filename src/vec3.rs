@@ -27,19 +27,29 @@ impl Vec3 {
     }
 
     pub fn random_in_unit_sphere() -> Vec3 {
-        iter::repeat_with(|| Vec3::random())
-            .find(|v| v.length_squared() > 1.)
+        iter::repeat_with(|| Vec3::random_range(-1., 1.))
+            .find(|v| v.length_squared() < 1.)
+            .unwrap()
+    }
+
+    pub fn random_in_unit_disk() -> Vec3 {
+        iter::repeat_with(|| {
+            let x = random_range(-1., 1.);
+            let y = random_range(-1., 1.);
+            Vec3::new(x, y, 0.)
+        })
+            .find(|v| v.length_squared() < 1.)
             .unwrap()
     }
 
     pub fn random_unit_vector() -> Vec3 {
-        let a = random_range(0., 2.*PI);
+        let a = random_range(0., 2. * PI);
         let z = random_range(-1., 1.);
-        let r = (1. - z*z).sqrt();
-        Vec3::new(r*a.cos(), r*a.sin(), z)
+        let r = (1. - z * z).sqrt();
+        Vec3::new(r * a.cos(), r * a.sin(), z)
     }
 
-    pub fn random_in_hemisphere(normal: &Vec3) ->Vec3 {
+    pub fn random_in_hemisphere(normal: &Vec3) -> Vec3 {
         let in_unit_sphere = Vec3::random_in_unit_sphere();
         if in_unit_sphere.dot(normal) > 0.0 {
             in_unit_sphere

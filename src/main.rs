@@ -34,12 +34,13 @@ fn main() {
     println!("P3 {} {}", image_width, image_height);
     println!("255");
 
-    let camera = Camera::new(
-        Point3::new(-2., 2., 1.),
-        Point3::new(0., 0., -1.),
-        Vec3::new(0., 1., 0.),
-        20.,
-        aspect_ratio);
+    let look_from = Point3::new(3., 3., 2.);
+    let look_at = Point3::new(0., 0., -1.);
+    let v_up = Vec3::new(0., 1., 0.);
+    let focus_dist = (&look_from - &look_at).length();
+    let aperture = 1.0;
+    let vfov = 20.;
+    let camera = Camera::new(look_from, look_at, v_up, vfov, aspect_ratio, aperture, focus_dist);
     // eprintln!("camera: {:?}", camera);
 
     let mut world = HittableList::new();
