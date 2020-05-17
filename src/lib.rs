@@ -12,4 +12,4 @@ pub use crate::ray::Ray;
 pub use crate::hittable::{Hittable, Sphere, HittableList};
 pub use crate::material::{Lambertian, Material, Metal, Scatter, Dielectric};
 pub use crate::camera::Camera;
-pub use crate::util::random;
+pub use crate::util::{random, random_range};
