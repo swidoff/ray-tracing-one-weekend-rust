@@ -34,7 +34,14 @@ fn main() {
     println!("P3 {} {}", image_width, image_height);
     println!("255");
 
-    let camera = Camera::new();
+    let camera = Camera::new(
+        Point3::new(-2., 2., 1.),
+        Point3::new(0., 0., -1.),
+        Vec3::new(0., 1., 0.),
+        20.,
+        aspect_ratio);
+    // eprintln!("camera: {:?}", camera);
+
     let mut world = HittableList::new();
     world.add(Rc::new(
         Sphere {
