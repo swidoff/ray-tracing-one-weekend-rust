@@ -7,5 +7,5 @@ My Rust implementation of [Ray Tracing in One Weekend](https://raytracing.github
 
 **Large Render**
 
-![alt text](images/final-image-384.png "Small Render")
+![alt text](images/final-image-768.png "Large Render")
 
